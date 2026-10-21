@@ -1,0 +1,36 @@
+### Contoh request untuk ekstensi "REST Client" (humao.rest-client). Klik "Send Request".
+@base = http://localhost:8788
+
+### Log masuk sebagai pemilik (akaun demo)
+# @name login
+POST {{base}}/v1/auth/login
+Content-Type: application/json
+
+{ "email": "admin@campusos.io", "password": "password123" }
+
+### Overview pengurusan
+GET {{base}}/v1/overview
+Authorization: Bearer {{login.response.body.accessToken}}
+
+### Senarai guru (cari "chemistry")
+GET {{base}}/v1/teachers?q=chemistry
+Authorization: Bearer {{login.response.body.accessToken}}
+
+### Jadual waktu + konflik
+GET {{base}}/v1/timetable
+Authorization: Bearer {{login.response.body.accessToken}}
+
+### Cuba tambah sesi yang bertembung (akan dijawab 409 + butiran konflik)
+POST {{base}}/v1/timetable/sessions
+Authorization: Bearer {{login.response.body.accessToken}}
+Content-Type: application/json
+
+{ "day": "Mon", "start": "08:00", "classId": "<ID kelas dari GET /v1/classes>", "roomId": "Room 204" }
+
+### Laporan beban kerja (CSV)
+GET {{base}}/v1/reports/wl?format=csv
+Authorization: Bearer {{login.response.body.accessToken}}
+
+### Dashboard guru (log masuk sebagai sarah.m@campusos.io dahulu)
+GET {{base}}/v1/me/dashboard
+Authorization: Bearer {{login.response.body.accessToken}}

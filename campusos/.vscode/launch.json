@@ -1,0 +1,8 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    { "name": "Debug backend", "type": "node", "request": "launch", "cwd": "${workspaceFolder}/backend",
+      "runtimeArgs": ["--disable-warning=ExperimentalWarning", "--env-file-if-exists=.env"],
+      "program": "${workspaceFolder}/backend/src/server.js", "env": { "PORT": "8788" }, "console": "integratedTerminal" }
+  ]
+}

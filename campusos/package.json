@@ -1,0 +1,15 @@
+{
+  "name": "campusos",
+  "private": true,
+  "version": "1.0.0",
+  "description": "CampusOS: frontend (React/Vite) dan backend (Node API)",
+  "scripts": {
+    "setup": "npm --prefix frontend install",
+    "dev": "node scripts/dev.mjs",
+    "api": "npm --prefix backend run dev",
+    "test": "npm --prefix backend test",
+    "seed": "npm --prefix backend run seed",
+    "build": "npm --prefix frontend run build",
+    "pilot": "node scripts/pilot.mjs"
+  }
+}

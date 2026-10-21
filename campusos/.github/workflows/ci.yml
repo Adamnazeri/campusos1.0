@@ -1,0 +1,28 @@
+# PENTING: Lokasi fail GitHub Actions:
+# GitHub Actions hanya membaca fail workflow di dalam `<akar-repo>/.github/workflows/`.
+#   - Jika folder `campusos/` ialah akar repositori Git anda: biarkan fail ini di `.github/workflows/ci.yml`.
+#   - Jika akar repositori Git ialah folder induk di atas `campusos/`: alihkan `.github/workflows/ci.yml` ke akar repo
+#     dan tukar setiap `working-directory: backend` / `working-directory: frontend` kepada
+#     `working-directory: campusos/backend` dan `working-directory: campusos/frontend`.
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22.12" }
+      - run: npm test
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22.12", cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+      - run: npm run check

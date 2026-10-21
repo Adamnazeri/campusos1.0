@@ -1,0 +1,60 @@
+# Production: Caddy (HTTPS) → web (nginx, frontend) + backend (API, SQLite pada volume).
+#   1) salin .env.production.example → .env dan isi nilai
+#   2) mkdir -p backups && chown 1000:1000 backups
+#   3) docker compose up -d --build
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN:?tetapkan DOMAIN dalam .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web, backend]
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ""
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:?tetapkan JWT_SECRET dalam .env (openssl rand -hex 32)}
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?tetapkan APP_ENCRYPTION_KEY dalam .env (openssl rand -hex 32)}
+      CORS_ORIGIN: https://${DOMAIN}
+      APP_URL: https://${DOMAIN}
+      TRUST_PROXY: "1" # Caddy ialah satu-satunya proxy di hadapan API
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-0}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_WEBHOOK_URL: ${MAIL_WEBHOOK_URL:-}
+      MAIL_WEBHOOK_AUTH: ${MAIL_WEBHOOK_AUTH:-}
+      MAIL_FROM: ${MAIL_FROM:-CampusOS <no-reply@localhost>}
+      # Web Push (alarm kelas walaupun app ditutup). Kosong = kunci VAPID dijana automatik & disimpan dalam pangkalan data. Disyorkan: `npm run vapid` lalu letak dalam .env
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
+      PUSH_ENABLED: ${PUSH_ENABLED:-1}
+      BILLING_ENABLED: ${BILLING_ENABLED:-0}
+      BILLING_WEBHOOK_SECRET: ${BILLING_WEBHOOK_SECRET:-}
+      BACKUP_DIR: /backups
+      BACKUP_KEEP: ${BACKUP_KEEP:-14}
+    volumes:
+      - campusos_data:/data
+      # Kontena berjalan sebagai user `node` (UID 1000). Buat dahulu di host: mkdir -p backups && chown 1000:1000 backups
+      - ./backups:/backups
+
+volumes:
+  campusos_data:
+  caddy_data:
+  caddy_config:
